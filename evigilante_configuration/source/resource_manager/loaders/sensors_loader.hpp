@@ -11,15 +11,8 @@ namespace eos
         : public Loader
     {
     public:
-      BaseResource::Ptr load(RawData const &data)const;
-      BaseResource::Ptr loadJson(const RawData &data) const;
-      BaseResource::Ptr loadXml(const RawData &data) const;
+      BaseResource::Ptr load(RawData const &data) const;
       bool save(RawData &data, BaseResource::Ptr const &rsc) const;
-      bool saveJson(RawData &data, BaseResource::Ptr const &rsc) const;
-      bool saveXml(RawData &data, BaseResource::Ptr const &rsc) const;
-
-    protected:
-      bool m_load_json; // new version true by default
     };
   }
 }

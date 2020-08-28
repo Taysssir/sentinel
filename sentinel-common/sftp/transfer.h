@@ -62,7 +62,6 @@ namespace eos
       void _downloaded(int model, bool ok, QString const&);
       void _uploaded(int model, bool ok);      
       void onDataAvailable(com::Patrol const& patrol);
-      void onDataAvailable(com::Sensor_ext const& sensor);
       void onDataAvailable(com::Area const& area);
       void onRobotDisconnected() {/* DO SOMETHING */}
       void onRobotConnected() {/* DO SOMETHING */}

@@ -2,6 +2,13 @@
 #include "eos/configuration/models.pb.h"
 #include "tinyxml.h"
 
+#include <QJsonObject>
+#include <QJsonDocument>
+#include <QJsonArray>
+
+#include <QDebug>
+
+
 namespace eos
 {
   namespace eosconfig
@@ -14,6 +21,8 @@ namespace eos
       const char TOP_RIGHT[] = "topRight";
       const char BOTTOM_RIGHT[] = "bottomRight";
       const char PERMISSIONS[] = "permissions";
+      const char TYPE[] = "type";
+      const char POINTS[] = "points";
       const char X[] = "x";
       const char Y[] = "y";
     }
@@ -93,7 +102,65 @@ namespace eos
       return xml;
     }
 
-    BaseResource::Ptr ZonesLoader::load(RawData const &data) const
+    //Load Areas
+
+    BaseResource::Ptr ZonesLoader::load(const RawData &data) const
+    {
+        bool load_json = true;
+        if(load_json)
+        {
+            return loadJson(data);
+        }
+        else
+        {
+            return loadXml(data);
+        }
+    }
+
+
+
+    BaseResource::Ptr ZonesLoader::loadJson(const RawData &data) const
+    {
+        auto zones = rsc::alloc<Zones>();
+        QJsonDocument jdoc = QJsonDocument::fromJson(QByteArray(data.c_str()));
+        if(!jdoc.isNull())
+        {
+            QJsonObject json = jdoc.object();
+            QJsonArray jZones = json[tag::ZONES].toArray();
+            for(auto jZone : jZones)
+            {
+                Zone *zone = zones->add_zones();
+                //type area
+
+                qInfo() << " ZonesLoader::loadJson : " << jZone.toObject()[tag::TYPE].toString();
+
+                auto jPtsArray = jZone.toObject()[tag::POINTS].toArray();
+
+                    //auto jData = jPts.toObject();
+                   // qInfo() << "jData " << jData;
+                   // qInfo() << "X ::: " << jData[tag::X].toString().toDouble();
+                   // qInfo() << "Y ::: " << jData[tag::Y].toString().toDouble();
+
+                zone->mutable_top_left()->set_x(jPtsArray[1].toObject()[tag::X].toString().toDouble());
+                zone->mutable_top_left()->set_y(jPtsArray[1].toObject()[tag::Y].toString().toDouble());
+                zone->mutable_bottom_right()->set_x(jPtsArray[3].toObject()[tag::X].toString().toDouble());
+                zone->mutable_bottom_right()->set_y(jPtsArray[3].toObject()[tag::Y].toString().toDouble());
+
+               zone->set_permissions(static_cast<Zone::Permission>(0 * jZone.toObject()[tag::TYPE].toString().toDouble()));
+
+               // Get Permission Type:
+              //zone->permissions();
+
+            }
+        }
+
+        return zones;
+    }
+
+
+
+
+    BaseResource::Ptr ZonesLoader::loadXml(RawData const &data) const
     {
       TiXmlDocument doc;
       doc.Parse(data.c_str(), 0, TIXML_DEFAULT_ENCODING);
@@ -115,7 +182,21 @@ namespace eos
       return zones;
     }
 
+    //save Areas
     bool ZonesLoader::save(RawData &data, BaseResource::Ptr const &rsc) const
+    {
+        static bool isJson = true;
+        if(isJson)
+        {
+            return saveJson(data,rsc);
+        }
+        else
+        {
+            return saveXml(data,rsc);
+        }
+    }
+
+    bool ZonesLoader::saveXml(RawData &data, BaseResource::Ptr const &rsc) const
     {
       TiXmlDocument doc;
       TiXmlElement *root = xmlhelpers::createDocument(tag::ZONES, doc);
@@ -133,5 +214,88 @@ namespace eos
 
       return xmlhelpers::dump(doc, data);
     }
-  }
-}
+
+    bool ZonesLoader::saveJson(RawData &data, BaseResource::Ptr const &rsc) const
+    {
+        /*
+         * "
+        {
+            "zones":
+            [
+                {
+                "type":"No Mouvement",
+                    "points":
+                    [
+                            {
+                                "x": "757",
+                                "y": "832",
+                            },
+                            {
+                                "x": "757",
+                                "y": "729",
+                            },
+                            {
+                                "x": "568",
+                                "y": "729",
+                            },
+                            {
+                                "x": "568",
+                                "y": "832",
+                            }
+                        }
+                    ]
+                }
+            ]
+        }
+            "
+        */
+
+        QJsonObject jZones;
+        QJsonArray jZoneArray;
+        auto zones = rsc::as<Zones>(rsc);
+        for (auto &zone : zones->zones())
+        {
+
+            QJsonObject jZone;
+            QJsonArray jPointArray;
+            for (int i=0; i<4 ;i++)
+            {
+            QJsonObject jPoint;
+
+            if (i==0)
+            {
+            jPoint.insert(tag::X, QJsonValue::fromVariant(QString::number(zone.top_left().x())));
+            jPoint.insert(tag::Y, QJsonValue::fromVariant(QString::number(zone.bottom_right().y())));
+            }
+            else if (i==1){
+
+            jPoint.insert(tag::X, QJsonValue::fromVariant(QString::number(zone.top_left().x())));
+            jPoint.insert(tag::Y, QJsonValue::fromVariant(QString::number(zone.top_left().y())));
+            }
+            else if (i==2){
+            jPoint.insert(tag::X, QJsonValue::fromVariant(QString::number(zone.bottom_right().x())));
+            jPoint.insert(tag::Y, QJsonValue::fromVariant(QString::number(zone.top_left().y())));
+            }
+            else {
+            jPoint.insert(tag::X, QJsonValue::fromVariant(QString::number(zone.bottom_right().x())));
+            jPoint.insert(tag::Y, QJsonValue::fromVariant(QString::number(zone.bottom_right().y())));
+            }
+            //qInfo() <<"Type   " << zone.permissions();
+
+            jPointArray.push_back(jPoint);
+            }
+            //qInfo() << "type zone" <<zone.permissions();
+            jZone.insert(tag::TYPE,QJsonValue::fromVariant((QString::number(zone.permissions()))));
+            jZone.insert(tag::POINTS,jPointArray);
+            jZoneArray.push_back(jZone);
+        }
+        jZones.insert(tag::ZONES,jZoneArray);
+
+        QJsonDocument doc(jZones);
+        QString json_str = doc.toJson();
+        // data = json_str;
+        //  qDebug() << " " << json_str;
+        data = json_str.toStdString();
+        return not data.empty();
+
+}}}

@@ -217,11 +217,6 @@ namespace com
     typedef struct
     {
         QString data;
-    }Sensor_ext;
-
-    typedef struct
-    {
-        QString data;
     }Area;
 
     typedef struct
@@ -301,9 +296,7 @@ namespace RequestType
   const char MONITOR_REQ[] = "/monitor";
   const char THERMAL_CAM[] = "/?action=stream";
   const char PATROL_REQ[] = "/patrol";
-  const char SENSOR_REQ[] = "/sensor";
   const char AREA_REQ[] = "/area";
-
 }
 
 class HttpClient : public QObject
@@ -337,9 +330,7 @@ signals:
     void onDataAvailable(com::BatchFileDir const& batch);
     void onDataAvailable(QImage const& batch);
     void onDataAvailable(com::Patrol const& patrol);
-    void onDataAvailable(com::Sensor_ext const& sensor);
     void onDataAvailable(com::Area const& area);
-
 
 public slots:
     bool Get(const QString &url)
@@ -387,20 +378,7 @@ public slots:
                 emit onDataAvailable(patrol);
             }
         }
-        else if(0 == QString::compare(RequestType::SENSOR_REQ , urlPath))
-        {
-            if(data.contains("result"))
-            {
-                //qInfo() << "POST message Ack " << url ;
-                //continue;
-            }
-            else
-            {
-                com::Sensor_ext sensor;
-                sensor.data = data;
-                emit onDataAvailable(sensor);
-            }
-        }
+        //Area
         else if(0 == QString::compare(RequestType::AREA_REQ , urlPath))
         {
             if(data.contains("result"))
@@ -415,6 +393,7 @@ public slots:
                 emit onDataAvailable(area);
             }
         }
+        //
 
         QJsonDocument jdoc = QJsonDocument::fromJson(data);
         if(!jdoc.isNull())

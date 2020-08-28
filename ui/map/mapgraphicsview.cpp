@@ -38,7 +38,6 @@ MapGraphicsView::MapGraphicsView(core::AppInstance &instance, QGraphicsScene *sc
     , previousMode_(constants::Normal)
     , dummyZone_(nullptr)
     , patrolsItem_(0)
-    , sensorsItem_(0)
     , iGroupedEditPointsCounter(0)
 {
     setCacheMode(QGraphicsView::CacheBackground); // Speed up the total rendering time for areas that are slow to render
@@ -65,6 +64,7 @@ MapGraphicsView::MapGraphicsView(core::AppInstance &instance, QGraphicsScene *sc
                                           QSize(constants::map::width(),
                                                 constants::map::height()),
                                           this, 0);
+
     scene_->addItem(patrolsItem_);
 
     subscribe<core::DeleteZone>(*this);
@@ -73,9 +73,6 @@ MapGraphicsView::MapGraphicsView(core::AppInstance &instance, QGraphicsScene *sc
     subscribe<core::MapUpdate>(*this);
 
     mSensorModifier_ = new SensorModifier();
-    sensorsItem_ = new SensorPointGraphicsItem(eos::Sensor(),mSensorModifier_);
-    scene_->addItem(sensorsItem_);
-
     connect(mSensorModifier_, SIGNAL(deleteSensor(SensorPointGraphicsItem *)), this, SLOT(removeSensor(SensorPointGraphicsItem *)));
     connect(mSensorModifier_, SIGNAL(updateSensor(SensorPointGraphicsItem *)), this, SLOT(updateSensor(SensorPointGraphicsItem *)));
     size_ = QSize(constants::map::width(), constants::map::height());
@@ -92,9 +89,8 @@ MapGraphicsView::~MapGraphicsView()
 
 void MapGraphicsView::resize(QSize const &size)
 {
-  if (patrolsItem_ && sensorsItem_)
-      patrolsItem_->changeSize(size);
-      //sensorsItem_->changeSize(size);
+  if (patrolsItem_)
+    patrolsItem_->changeSize(size);
   size_ = size;
 }
 
@@ -126,7 +122,6 @@ void MapGraphicsView::wheelEvent(QWheelEvent *e)
 
   if ( currentScale > 0.5 )
       patrolsItem_->scalePoints(currentScale);
-  sensorsItem_->scalePoints(currentScale);
 
   updateSensorsScale();
   map_->setCurrentScale(currentScale);

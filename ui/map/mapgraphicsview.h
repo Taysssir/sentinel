@@ -14,8 +14,6 @@
 class QGraphicsRectItem;
 class ZoneGraphicsItem;
 class PatrolGraphicsItem;
-class SensorPointGraphicsItem;
-
 
 class MapGraphicsView
         : public QGraphicsView
@@ -37,10 +35,6 @@ public:
     inline PatrolGraphicsItem * patrolsItem()
     {
         return patrolsItem_;
-    }
-    inline SensorPointGraphicsItem * sensorsItem()
-    {
-        return sensorsItem_;
     }
 
     void resize(QSize const& size);
@@ -113,7 +107,6 @@ private:
     QGraphicsRectItem * dummyZone_;
     QPointF startCreateZone_;
     PatrolGraphicsItem * patrolsItem_;
-    SensorPointGraphicsItem * sensorsItem_;
 
     SensorModifier * mSensorModifier_;
     QSize size_;

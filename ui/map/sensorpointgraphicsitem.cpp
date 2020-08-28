@@ -174,15 +174,7 @@ void SensorPointGraphicsItem::mouseReleaseEvent(QGraphicsSceneMouseEvent *event)
     return;
   }
 }
-void SensorPointGraphicsItem::scalePoints(qreal scaleFactor)
-{
-    currentPointScale_ = 1/scaleFactor;
 
-    for (int i = 0; i < points_.size(); i++)
-    {
-        points_.at(i)->setScale(currentPointScale_);
-    }
-}
 void SensorPointGraphicsItem::hoverEnterEvent(QGraphicsSceneHoverEvent *)
 {
   setSelected(true);
@@ -456,5 +448,3 @@ void SensorModifier::setMSensorGItem(QVector<SensorPointGraphicsItem *> *mSensor
 {
   mSensorGItem_ = mSensorGItem;
 }
-
-

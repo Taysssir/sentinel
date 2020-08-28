@@ -6,8 +6,6 @@
 #include <QGraphicsItem>
 #include <QMenu>
 #include "qgraphicssvgs.h"
-
-
 #include "evigilante_configuration/include/eos/configuration/models.pb.h"
 
 class SensorModifier;
@@ -33,9 +31,6 @@ public:
     virtual void hoverEnterEvent(QGraphicsSceneHoverEvent * event);
     virtual void hoverLeaveEvent(QGraphicsSceneHoverEvent * event);
     virtual void contextMenuEvent(QGraphicsSceneContextMenuEvent *event);
-    void resize(QSize const& size);
-
-    void scalePoints(qreal scaleFactor);
     /*!
      * \brief check if this item is in editing mode (i.e. selected)
      * \return true if editing, false otherwise
@@ -85,19 +80,6 @@ private:
     bool isMovingIcon_;           /*!< state if user is dragging the sensor icon */
     bool isChangeName_;           /*!< state if user clicks on the icon to change sensor's name&type */
     bool isMovingRobPos_;         /*!< state if user is dragging the robotPoint */
-
-    QSize size_;
-    QVector<SensorPointGraphicsItem *> points_;
-    void changeSize(QSize const &size);
-    QSize size() const;
-    QPointF location_;
-    QPointF dragStart_;
-    QGraphicsTextItem *position_;
-    eos::Patrol::Type currentTypeEditing_;
-    QPointF mousePosition_;
-    int closestPoint_ = -1;
-
-    qreal currentPointScale_;
 
 };
 
@@ -177,13 +159,5 @@ private:
     QVector<SensorPointGraphicsItem*> * mSensorGItem_;/*!< List of all visible/available sensor items */
 
 };
-inline QSize SensorPointGraphicsItem::size() const
-{
-  return size_;
-}
 
-inline void SensorPointGraphicsItem::changeSize(QSize const &size)
-{
-  size_ = size;
-}
 #endif // SENSORPOINTGRAPHICITEM_H

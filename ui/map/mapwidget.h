@@ -50,7 +50,6 @@ public:
     void receive(core::MapUpdate const& );
     PatrolGraphicsItem * patrolsItem();
 
-
     void resetRotationControls();
 
     bool isEditing() {return editModeStatus;}

@@ -76,7 +76,6 @@ namespace eos
       QObject::connect(&httpClient_,SIGNAL(onConnectionRefused(void))    ,this,SLOT(onRobotDisconnected(void)));
       QObject::connect(&httpClient_,SIGNAL(onConnected(void))            ,this,SLOT(onRobotConnected(void)));
       QObject::connect(&httpClient_,SIGNAL(onDataAvailable(com::Patrol)) ,this,SLOT(onDataAvailable(com::Patrol)));
-      QObject::connect(&httpClient_,SIGNAL(onDataAvailable(com::Sensor_ext)) ,this,SLOT(onDataAvailable(com::Sensor_ext)));
       QObject::connect(&httpClient_,SIGNAL(onDataAvailable(com::Area)) ,this,SLOT(onDataAvailable(com::Area)));
 
       start();
@@ -144,8 +143,9 @@ namespace eos
                   QByteArray data;
                   QTextStream s1(&file);
                   data.append(s1.readAll());
-                  qInfo() << "Upload Data Contenent "<< data;
                   //qDebug() << "string content:" << data; // empty!!!
+                  qInfo() << "Upload Data Contenent ::::  "<< data;
+                    qInfo() << "Data Upload Path " << local_file;
                   if(data.isEmpty())
                   {
                     qWarning() << "Transfer::upload - data is empty " << local_file;
@@ -241,39 +241,7 @@ namespace eos
 
         return ;
     }
-
-    void Transfer::onDataAvailable(com::Sensor_ext const& sensor)
-    {
-        eos::Configuration::Model model = eos::Configuration::Sensors;
-
-        QString filename = QDir::cleanPath(temp_dir_.path() + QDir::separator() + get_filename(model) ) ;
-        QString data = sensor.data;
-
-        /// writting
-        ///
-        QDir dir;
-        dir.mkpath(QDir::homePath()+QDir::separator() + core::Workspace::remote(core::Workspace::SharedDir));
-        com::BatchFileDir fileDir = QDir::cleanPath(filename);
-        QFile file(fileDir);
-        if(!file.open(QIODevice::WriteOnly))
-        {
-            qWarning() << "File existance " <<  file.exists() << "or file open "<< file.open(QIODevice::WriteOnly) ;
-            return;
-        }
-
-        QByteArray byte = data.toUtf8();
-
-        file.write(byte);
-        file.close();
-
-
-        _downloaded(model,true,filename);
-         qInfo() << "  Sensor found  " << sensor.data ;
-         qInfo() <<"   saving to; " << filename ;
-
-        return ;
-    }
-
+    //Area
     void Transfer::onDataAvailable(com::Area const& area)
     {
         eos::Configuration::Model model = eos::Configuration::Zones;
@@ -301,11 +269,10 @@ namespace eos
 
         _downloaded(model,true,filename);
          qInfo() << "  Area found  " << area.data ;
-        // qInfo() <<"   saving to; " << filename ;
+         qInfo() <<"   saving to; " << filename ;
 
         return ;
     }
-
 
     void Transfer::run()
     {
